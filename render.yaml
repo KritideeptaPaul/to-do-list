@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: to-do-list
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: .
