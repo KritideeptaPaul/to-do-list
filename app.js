@@ -202,23 +202,28 @@ function calculateMetrics() {
 function renderKPIsAndSummary() {
   const m = calculateMetrics();
 
-  // 4 Top Cards
-  document.getElementById('kpiTasksDueToday').textContent = m.dueToday;
-  document.getElementById('kpiCompletedThisWeek').textContent = m.completedThisWeek;
-  document.getElementById('kpiOverdue').textContent = m.overdue;
-  document.getElementById('kpiCompletionRate').textContent = `${m.rate}%`;
+  const setTxt = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
 
-  // Right Summary Card
-  document.getElementById('summaryTotalTasks').textContent = m.total;
-  document.getElementById('summaryCompleted').textContent = m.completed;
-  document.getElementById('summaryInProgress').textContent = m.inProgress;
-  document.getElementById('summaryOverdue').textContent = m.overdue;
+  // Top Cards
+  setTxt('kpiTasksDueToday', m.dueToday);
+  setTxt('kpiCompletedThisWeek', m.completedThisWeek);
+  setTxt('kpiOverdue', m.overdue);
+  setTxt('kpiCompletionRate', `${m.rate}%`);
 
-  // Left Priority Legend
-  document.getElementById('legendHighPct').textContent = `${m.highPct}%`;
-  document.getElementById('legendMedPct').textContent = `${m.medPct}%`;
-  document.getElementById('legendLowPct').textContent = `${m.lowPct}%`;
-  document.getElementById('legendTotalTasks').textContent = `Total Tasks: ${m.total}`;
+  // Summary counts
+  setTxt('summaryTotalTasks', m.total);
+  setTxt('summaryCompleted', m.completed);
+  setTxt('summaryInProgress', m.inProgress);
+  setTxt('summaryOverdue', m.overdue);
+
+  // Priority Legend
+  setTxt('legendHighPct', `${m.highPct}%`);
+  setTxt('legendMedPct', `${m.medPct}%`);
+  setTxt('legendLowPct', `${m.lowPct}%`);
+  setTxt('legendTotalTasks', `Total Tasks: ${m.total}`);
 
   // Redraw Canvas Donut Chart
   renderPriorityDonutChart(m);
@@ -232,7 +237,7 @@ function renderPriorityDonutChart(metrics) {
   const dpr = window.devicePixelRatio || 1;
 
   // Set real resolution for high-DPI screens
-  const size = 180;
+  const size = 96;
   canvas.width = size * dpr;
   canvas.height = size * dpr;
   canvas.style.width = `${size}px`;
@@ -243,8 +248,8 @@ function renderPriorityDonutChart(metrics) {
 
   const centerX = size / 2;
   const centerY = size / 2;
-  const outerRadius = 78;
-  const innerRadius = 46;
+  const outerRadius = 42;
+  const innerRadius = 30;
 
   const total = metrics.high + metrics.medium + metrics.low;
 
@@ -254,16 +259,16 @@ function renderPriorityDonutChart(metrics) {
     ctx.arc(centerX, centerY, outerRadius, 0, Math.PI * 2);
     ctx.arc(centerX, centerY, innerRadius, Math.PI * 2, 0, true);
     ctx.closePath();
-    ctx.fillStyle = '#E5E7EB';
+    ctx.fillStyle = '#E4E4E7';
     ctx.fill();
     return;
   }
 
-  // Segments: High (Blue), Medium (Amber), Low (Periwinkle)
+  // Segments: High (Red), Medium (Amber), Low (Slate)
   const segments = [
-    { label: 'High', count: metrics.high, color: '#2563EB', textColor: '#FFFFFF' },
-    { label: 'Medium', count: metrics.medium, color: '#F59E0B', textColor: '#FFFFFF' },
-    { label: 'Low', count: metrics.low, color: '#A5B4FC', textColor: '#1E293B' }
+    { label: 'High', count: metrics.high, color: '#DC2626' },
+    { label: 'Medium', count: metrics.medium, color: '#D97706' },
+    { label: 'Low', count: metrics.low, color: '#71717A' }
   ];
 
   let currentAngle = -Math.PI / 2; // start from top (12 o'clock)
@@ -273,7 +278,6 @@ function renderPriorityDonutChart(metrics) {
     const sliceAngle = (seg.count / total) * (Math.PI * 2);
     const endAngle = currentAngle + sliceAngle;
 
-    // Draw segment ring
     ctx.beginPath();
     ctx.arc(centerX, centerY, outerRadius, currentAngle, endAngle, false);
     ctx.arc(centerX, centerY, innerRadius, endAngle, currentAngle, true);
@@ -281,27 +285,10 @@ function renderPriorityDonutChart(metrics) {
     ctx.fillStyle = seg.color;
     ctx.fill();
 
-    // Segment divider line for clean separation
-    ctx.lineWidth = 2.5;
+    // Subtle divider line
+    ctx.lineWidth = 1.5;
     ctx.strokeStyle = '#FFFFFF';
     ctx.stroke();
-
-    // Percentage Label inside slice if slice is large enough
-    const pct = Math.round((seg.count / total) * 100);
-    if (pct >= 12) {
-      const midAngle = currentAngle + sliceAngle / 2;
-      const textRadius = (outerRadius + innerRadius) / 2;
-      const labelX = centerX + Math.cos(midAngle) * textRadius;
-      const labelY = centerY + Math.sin(midAngle) * textRadius;
-
-      ctx.save();
-      ctx.font = 'bold 11px Poppins, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = seg.textColor;
-      ctx.fillText(`${pct}%`, labelX, labelY);
-      ctx.restore();
-    }
 
     currentAngle = endAngle;
   });
@@ -312,16 +299,12 @@ function renderPriorityDonutChart(metrics) {
   ctx.fillStyle = '#FFFFFF';
   ctx.fill();
 
-  // Center subtle label (e.g., Total or check icon)
-  ctx.font = '600 13px Poppins, sans-serif';
+  // Center subtle label (Total)
+  ctx.font = '600 13px Inter, -apple-system, BlinkMacSystemFont, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#1349D6';
-  ctx.fillText(`${total}`, centerX, centerY - 5);
-
-  ctx.font = '500 9px Poppins, sans-serif';
-  ctx.fillStyle = '#6B7280';
-  ctx.fillText('TASKS', centerX, centerY + 10);
+  ctx.fillStyle = '#18181B';
+  ctx.fillText(`${total}`, centerX, centerY);
 }
 
 // --- Filter & Sort Tasks ---
@@ -649,96 +632,114 @@ function escapeHtml(str) {
 
 // --- Setup Event Listeners ---
 function setupEventListeners() {
+  const on = (id, event, handler) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(event, handler);
+  };
+
   // Modal buttons
-  document.getElementById('btnOpenAddModal').addEventListener('click', openAddModal);
-  document.getElementById('btnQuickAddTab').addEventListener('click', openAddModal);
-  document.getElementById('btnEmptyAdd').addEventListener('click', openAddModal);
-  document.getElementById('btnModalClose').addEventListener('click', closeModal);
-  document.getElementById('btnModalCancel').addEventListener('click', closeModal);
-  document.getElementById('taskForm').addEventListener('submit', handleFormSubmit);
+  on('btnOpenAddModal', 'click', openAddModal);
+  on('btnEmptyAdd', 'click', openAddModal);
+  on('btnModalClose', 'click', closeModal);
+  on('btnModalCancel', 'click', closeModal);
+  on('taskForm', 'submit', handleFormSubmit);
 
   // Close modal on backdrop click
-  document.getElementById('taskModal').addEventListener('click', (e) => {
-    if (e.target.id === 'taskModal') closeModal();
-  });
+  const taskModal = document.getElementById('taskModal');
+  if (taskModal) {
+    taskModal.addEventListener('click', (e) => {
+      if (e.target.id === 'taskModal') closeModal();
+    });
+  }
 
   // Close modal on Escape
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && document.getElementById('taskModal').classList.contains('open')) {
+    if (e.key === 'Escape' && taskModal && taskModal.classList.contains('open')) {
       closeModal();
     }
   });
 
   // Toolbar actions
-  document.getElementById('btnResetDemo').addEventListener('click', resetDemoData);
-  document.getElementById('btnExportJson').addEventListener('click', exportTasksJson);
+  on('btnResetDemo', 'click', resetDemoData);
+  on('btnExportJson', 'click', exportTasksJson);
 
   // Search input
   const searchInput = document.getElementById('taskSearchInput');
-  searchInput.addEventListener('input', (e) => {
-    state.searchQuery = e.target.value;
-    renderTable();
-  });
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      state.searchQuery = e.target.value;
+      renderTable();
+    });
+  }
 
   // Priority filter dropdown
   const priorityFilter = document.getElementById('priorityFilterSelect');
-  priorityFilter.addEventListener('change', (e) => {
-    state.priorityFilter = e.target.value;
-    renderTable();
-  });
+  if (priorityFilter) {
+    priorityFilter.addEventListener('change', (e) => {
+      state.priorityFilter = e.target.value;
+      renderTable();
+    });
+  }
 
-  // Bottom Tabs navigation
+  // Segmented Tabs navigation
   const tabsContainer = document.getElementById('viewTabsContainer');
-  tabsContainer.addEventListener('click', (e) => {
-    const btn = e.target.closest('.tab-btn');
-    if (!btn) return;
+  if (tabsContainer) {
+    tabsContainer.addEventListener('click', (e) => {
+      const btn = e.target.closest('.tab-btn');
+      if (!btn) return;
 
-    tabsContainer.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+      tabsContainer.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
 
-    state.activeTab = btn.dataset.tab;
-    renderTable();
-  });
+      state.activeTab = btn.dataset.tab;
+      renderTable();
+    });
+  }
 
   // Table clicks (Status toggle, Edit, Delete, Checkbox select)
   const tableBody = document.getElementById('taskTableBody');
-  tableBody.addEventListener('click', (e) => {
-    const actionBtn = e.target.closest('button[data-action]');
-    if (actionBtn) {
-      const action = actionBtn.dataset.action;
-      const id = actionBtn.dataset.id;
-      if (action === 'toggle-status') toggleTaskStatus(id);
-      else if (action === 'edit') openEditModal(id);
-      else if (action === 'delete') deleteTask(id);
-      return;
-    }
-
-    const rowCheckbox = e.target.closest('.row-select');
-    if (rowCheckbox) {
-      const id = rowCheckbox.dataset.id;
-      if (rowCheckbox.checked) {
-        state.selectedTaskIds.add(id);
-      } else {
-        state.selectedTaskIds.delete(id);
+  if (tableBody) {
+    tableBody.addEventListener('click', (e) => {
+      const actionBtn = e.target.closest('button[data-action]');
+      if (actionBtn) {
+        const action = actionBtn.dataset.action;
+        const id = actionBtn.dataset.id;
+        if (action === 'toggle-status') toggleTaskStatus(id);
+        else if (action === 'edit') openEditModal(id);
+        else if (action === 'delete') deleteTask(id);
+        return;
       }
-      const tasks = getFilteredAndSortedTasks();
-      const allSelected = tasks.length > 0 && tasks.every(t => state.selectedTaskIds.has(t.id));
-      document.getElementById('selectAllCheckbox').checked = allSelected;
-      updateBulkActionsBar();
-    }
-  });
+
+      const rowCheckbox = e.target.closest('.row-select');
+      if (rowCheckbox) {
+        const id = rowCheckbox.dataset.id;
+        if (rowCheckbox.checked) {
+          state.selectedTaskIds.add(id);
+        } else {
+          state.selectedTaskIds.delete(id);
+        }
+        const tasks = getFilteredAndSortedTasks();
+        const allSelected = tasks.length > 0 && tasks.every(t => state.selectedTaskIds.has(t.id));
+        const selectAll = document.getElementById('selectAllCheckbox');
+        if (selectAll) selectAll.checked = allSelected;
+        updateBulkActionsBar();
+      }
+    });
+  }
 
   // Select All checkbox
   const selectAll = document.getElementById('selectAllCheckbox');
-  selectAll.addEventListener('change', (e) => {
-    const tasks = getFilteredAndSortedTasks();
-    if (e.target.checked) {
-      tasks.forEach(t => state.selectedTaskIds.add(t.id));
-    } else {
-      tasks.forEach(t => state.selectedTaskIds.delete(t.id));
-    }
-    renderTable();
-  });
+  if (selectAll) {
+    selectAll.addEventListener('change', (e) => {
+      const tasks = getFilteredAndSortedTasks();
+      if (e.target.checked) {
+        tasks.forEach(t => state.selectedTaskIds.add(t.id));
+      } else {
+        tasks.forEach(t => state.selectedTaskIds.delete(t.id));
+      }
+      renderTable();
+    });
+  }
 
   // Table Column Header Sorting
   const sortHeaders = document.querySelectorAll('.task-table th.sortable');
@@ -756,9 +757,9 @@ function setupEventListeners() {
   });
 
   // Bulk buttons
-  document.getElementById('btnBulkComplete').addEventListener('click', bulkMarkComplete);
-  document.getElementById('btnBulkDelete').addEventListener('click', bulkDelete);
-  document.getElementById('btnBulkCancel').addEventListener('click', () => {
+  on('btnBulkComplete', 'click', bulkMarkComplete);
+  on('btnBulkDelete', 'click', bulkDelete);
+  on('btnBulkCancel', 'click', () => {
     state.selectedTaskIds.clear();
     renderTable();
   });
