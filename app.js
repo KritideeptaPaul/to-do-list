@@ -84,10 +84,17 @@ function loadTasks() {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
     try {
-      state.tasks = JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        state.tasks = parsed;
+      } else {
+        state.tasks = getInitialTasks();
+        saveTasks();
+      }
     } catch (e) {
       console.error('Failed to parse local storage, loading demo tasks', e);
       state.tasks = getInitialTasks();
+      saveTasks();
     }
   } else {
     state.tasks = getInitialTasks();
