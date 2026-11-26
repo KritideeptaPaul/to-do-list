@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Task Tracker — Minimalist Task Management</title>
-  <link rel="stylesheet" href="style.css?v=2.2">
+  <link rel="stylesheet" href="style.css?v=2.3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -35,12 +35,12 @@
           <span>Export</span>
         </button>
 
-        <button class="btn btn-ghost btn-sm" id="btnResetDemo" title="Reset to original demo tasks">
+        <button class="btn btn-ghost btn-sm" id="btnResetDemo" title="Clear all tasks">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-            <path d="M3 3v5h5"></path>
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
           </svg>
-          <span>Reset</span>
+          <span>Clear All</span>
         </button>
 
         <button class="btn btn-primary btn-sm" id="btnOpenAddModal">
@@ -214,7 +214,7 @@
               <line x1="12" y1="16" x2="12.01" y2="16"></line>
             </svg>
           </div>
-          <p class="empty-text">No tasks match your current view</p>
+          <p class="empty-text">No tasks yet. Create your first task to get started!</p>
           <button class="btn btn-sm btn-primary" id="btnEmptyAdd">Create New Task</button>
         </div>
       </div>
@@ -274,6 +274,6 @@
   <!-- Fallback button for cached JS scripts -->
   <button id="btnQuickAddTab" style="display:none;" aria-hidden="true"></button>
 
-  <script src="app.js?v=2.2"></script>
+  <script src="app.js?v=2.3"></script>
 </body>
 </html>

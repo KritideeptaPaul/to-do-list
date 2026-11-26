@@ -3,63 +3,13 @@
  * Reactive Task Management inspired by Google Sheets & Modern SaaS
  */
 
-// --- Default Demo Dataset matching the reference image ---
+// --- Initial Dataset ---
 function getInitialTasks() {
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  const dd = String(today.getDate()).padStart(2, '0');
-  const todayStr = `${yyyy}-${mm}-${dd}`;
-
-  // Helper to get offset date ISO string
-  function getOffsetDate(daysOffset) {
-    const d = new Date();
-    d.setDate(d.getDate() + daysOffset);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  }
-
-  // 30 Sample tasks mirroring the reference image distribution:
-  // High: 12 (40%), Medium: 12 (40%), Low: 6 (20%)
-  // Completed: 21, In Progress: 6, Overdue: 3 (Total: 30)
-  return [
-    { id: '1', title: 'Plan content calendar', priority: 'High', dueDate: getOffsetDate(-3), completed: true },
-    { id: '2', title: 'Finish project proposal', priority: 'High', dueDate: getOffsetDate(-3), completed: true },
-    { id: '3', title: 'Client meeting', priority: 'Medium', dueDate: getOffsetDate(-2), completed: true },
-    { id: '4', title: 'Email marketing campaign', priority: 'Medium', dueDate: getOffsetDate(-1), completed: false }, // Overdue
-    { id: '5', title: 'Update website copy', priority: 'Low', dueDate: getOffsetDate(-2), completed: false }, // Overdue
-    { id: '6', title: 'Team status update', priority: 'Medium', dueDate: getOffsetDate(-1), completed: true },
-    { id: '7', title: 'Review monthly budget', priority: 'High', dueDate: getOffsetDate(0), completed: true }, // Completed today
-    { id: '8', title: 'Design social media posts', priority: 'Low', dueDate: getOffsetDate(-1), completed: false }, // Overdue
-    { id: '9', title: 'Call with supplier', priority: 'Medium', dueDate: getOffsetDate(0), completed: false }, // Due today
-    { id: '10', title: 'Prepare presentation', priority: 'High', dueDate: getOffsetDate(0), completed: true }, // Today
-    { id: '11', title: 'Organize files', priority: 'Low', dueDate: getOffsetDate(0), completed: false }, // Due today
-    { id: '12', title: 'Write blog post', priority: 'Medium', dueDate: getOffsetDate(0), completed: false }, // Due today
-    { id: '13', title: 'Backup important data', priority: 'Low', dueDate: getOffsetDate(0), completed: false }, // Due today
-    { id: '14', title: 'Finalize quarterly OKRs', priority: 'High', dueDate: getOffsetDate(0), completed: false }, // Due today (6th due today)
-    { id: '15', title: 'Customer survey review', priority: 'Medium', dueDate: getOffsetDate(1), completed: false },
-    { id: '16', title: 'Conduct code audit', priority: 'High', dueDate: getOffsetDate(-4), completed: true },
-    { id: '17', title: 'Setup CI/CD pipeline', priority: 'High', dueDate: getOffsetDate(-4), completed: true },
-    { id: '18', title: 'Renew SSL certificates', priority: 'Medium', dueDate: getOffsetDate(-3), completed: true },
-    { id: '19', title: 'User interview session A', priority: 'High', dueDate: getOffsetDate(-3), completed: true },
-    { id: '20', title: 'User interview session B', priority: 'High', dueDate: getOffsetDate(-2), completed: true },
-    { id: '21', title: 'Refactor authentication flow', priority: 'High', dueDate: getOffsetDate(-2), completed: true },
-    { id: '22', title: 'Design system icon update', priority: 'Low', dueDate: getOffsetDate(-2), completed: true },
-    { id: '23', title: 'Optimize database queries', priority: 'High', dueDate: getOffsetDate(-1), completed: true },
-    { id: '24', title: 'Draft investor newsletter', priority: 'Medium', dueDate: getOffsetDate(-1), completed: true },
-    { id: '25', title: 'Competitor pricing analysis', priority: 'Medium', dueDate: getOffsetDate(-1), completed: true },
-    { id: '26', title: 'Onboarding guide overhaul', priority: 'Medium', dueDate: getOffsetDate(2), completed: true },
-    { id: '27', title: 'Security compliance check', priority: 'High', dueDate: getOffsetDate(3), completed: true },
-    { id: '28', title: 'Analytics tagging review', priority: 'Medium', dueDate: getOffsetDate(4), completed: true },
-    { id: '29', title: 'Clean legacy cloud storage', priority: 'Low', dueDate: getOffsetDate(5), completed: true },
-    { id: '30', title: 'Sync with product design lead', priority: 'High', dueDate: getOffsetDate(6), completed: true }
-  ];
+  return [];
 }
 
 // --- State Management ---
-const STORAGE_KEY = 'task_tracker_app_tasks_v2';
+const STORAGE_KEY = 'task_tracker_app_tasks_v3';
 
 let state = {
   tasks: [],
@@ -85,19 +35,14 @@ function loadTasks() {
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        state.tasks = parsed;
-      } else {
-        state.tasks = getInitialTasks();
-        saveTasks();
-      }
+      state.tasks = Array.isArray(parsed) ? parsed : [];
     } catch (e) {
-      console.error('Failed to parse local storage, loading demo tasks', e);
-      state.tasks = getInitialTasks();
+      console.error('Failed to parse local storage', e);
+      state.tasks = [];
       saveTasks();
     }
   } else {
-    state.tasks = getInitialTasks();
+    state.tasks = [];
     saveTasks();
   }
 }
@@ -583,14 +528,18 @@ function bulkDelete() {
   showToast(`${count} tasks deleted`, 'info');
 }
 
-// Reset Demo Data
+// Reset / Clear All Tasks
 function resetDemoData() {
-  if (confirm('Reset all tasks to the original demo data matching the reference image?')) {
-    state.tasks = getInitialTasks();
+  if (state.tasks.length === 0) {
+    showToast('No tasks to clear', 'info');
+    return;
+  }
+  if (confirm('Clear all tasks from the tracker?')) {
+    state.tasks = [];
     state.selectedTaskIds.clear();
     saveTasks();
     renderAll();
-    showToast('Reset to demo dataset successfully', 'success');
+    showToast('All tasks cleared', 'info');
   }
 }
 
