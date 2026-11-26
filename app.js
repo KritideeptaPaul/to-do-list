@@ -18,7 +18,9 @@ let state = {
   priorityFilter: 'ALL',
   sortColumn: 'dueDate',
   sortAscending: true,
-  selectedTaskIds: new Set()
+  selectedTaskIds: new Set(),
+  currentPage: 1,
+  pageSize: 10
 };
 
 // Initialize App
@@ -314,25 +316,58 @@ function renderTable() {
   const emptyState = document.getElementById('emptyState');
   const filteredBadge = document.getElementById('filteredCountBadge');
   const selectAll = document.getElementById('selectAllCheckbox');
+  const paginationBar = document.getElementById('tablePagination');
+  const paginationInfo = document.getElementById('paginationInfo');
+  const btnPrev = document.getElementById('btnPrevPage');
+  const btnNext = document.getElementById('btnNextPage');
+  const pageIndicator = document.getElementById('paginationPageIndicator');
 
-  const tasks = getFilteredAndSortedTasks();
-  filteredBadge.textContent = `${tasks.length} ${tasks.length === 1 ? 'task' : 'tasks'}`;
+  const allFilteredTasks = getFilteredAndSortedTasks();
+  const total = allFilteredTasks.length;
+  filteredBadge.textContent = `${total} ${total === 1 ? 'task' : 'tasks'}`;
 
-  if (tasks.length === 0) {
+  if (total === 0) {
     tableBody.innerHTML = '';
     emptyState.style.display = 'block';
     selectAll.checked = false;
+    if (paginationBar) paginationBar.style.display = 'none';
     updateBulkActionsBar();
     return;
   }
 
   emptyState.style.display = 'none';
 
-  // Check if all filtered are selected
-  const allSelected = tasks.length > 0 && tasks.every(t => state.selectedTaskIds.has(t.id));
-  selectAll.checked = allSelected;
+  // 10 Tasks per page pagination
+  const totalPages = Math.ceil(total / state.pageSize) || 1;
+  if (state.currentPage > totalPages) state.currentPage = totalPages;
+  if (state.currentPage < 1) state.currentPage = 1;
 
-  tableBody.innerHTML = tasks.map(task => {
+  const startIndex = (state.currentPage - 1) * state.pageSize;
+  const endIndex = Math.min(startIndex + state.pageSize, total);
+  const pageTasks = allFilteredTasks.slice(startIndex, endIndex);
+
+  // Update pagination UI
+  if (paginationBar) {
+    paginationBar.style.display = total > state.pageSize ? 'flex' : 'none';
+  }
+  if (paginationInfo) {
+    paginationInfo.textContent = `Showing ${startIndex + 1}–${endIndex} of ${total} tasks`;
+  }
+  if (pageIndicator) {
+    pageIndicator.textContent = `${state.currentPage} / ${totalPages}`;
+  }
+  if (btnPrev) {
+    btnPrev.disabled = state.currentPage <= 1;
+  }
+  if (btnNext) {
+    btnNext.disabled = state.currentPage >= totalPages;
+  }
+
+  // Check if all visible tasks on current page are selected
+  const allPageSelected = pageTasks.length > 0 && pageTasks.every(t => state.selectedTaskIds.has(t.id));
+  selectAll.checked = allPageSelected;
+
+  tableBody.innerHTML = pageTasks.map(task => {
     const isSelected = state.selectedTaskIds.has(task.id);
     const overdue = isTaskOverdue(task);
     const today = isTaskDueToday(task);
@@ -624,6 +659,7 @@ function setupEventListeners() {
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
       state.searchQuery = e.target.value;
+      state.currentPage = 1;
       renderTable();
     });
   }
@@ -633,6 +669,7 @@ function setupEventListeners() {
   if (priorityFilter) {
     priorityFilter.addEventListener('change', (e) => {
       state.priorityFilter = e.target.value;
+      state.currentPage = 1;
       renderTable();
     });
   }
@@ -648,6 +685,7 @@ function setupEventListeners() {
       btn.classList.add('active');
 
       state.activeTab = btn.dataset.tab;
+      state.currentPage = 1;
       renderTable();
     });
   }
@@ -674,8 +712,12 @@ function setupEventListeners() {
         } else {
           state.selectedTaskIds.delete(id);
         }
-        const tasks = getFilteredAndSortedTasks();
-        const allSelected = tasks.length > 0 && tasks.every(t => state.selectedTaskIds.has(t.id));
+        const allTasks = getFilteredAndSortedTasks();
+        const startIndex = (state.currentPage - 1) * state.pageSize;
+        const endIndex = Math.min(startIndex + state.pageSize, allTasks.length);
+        const pageTasks = allTasks.slice(startIndex, endIndex);
+
+        const allSelected = pageTasks.length > 0 && pageTasks.every(t => state.selectedTaskIds.has(t.id));
         const selectAll = document.getElementById('selectAllCheckbox');
         if (selectAll) selectAll.checked = allSelected;
         updateBulkActionsBar();
@@ -683,15 +725,19 @@ function setupEventListeners() {
     });
   }
 
-  // Select All checkbox
+  // Select All checkbox (selects visible page tasks)
   const selectAll = document.getElementById('selectAllCheckbox');
   if (selectAll) {
     selectAll.addEventListener('change', (e) => {
-      const tasks = getFilteredAndSortedTasks();
+      const allTasks = getFilteredAndSortedTasks();
+      const startIndex = (state.currentPage - 1) * state.pageSize;
+      const endIndex = Math.min(startIndex + state.pageSize, allTasks.length);
+      const pageTasks = allTasks.slice(startIndex, endIndex);
+
       if (e.target.checked) {
-        tasks.forEach(t => state.selectedTaskIds.add(t.id));
+        pageTasks.forEach(t => state.selectedTaskIds.add(t.id));
       } else {
-        tasks.forEach(t => state.selectedTaskIds.delete(t.id));
+        pageTasks.forEach(t => state.selectedTaskIds.delete(t.id));
       }
       renderTable();
     });
@@ -708,8 +754,26 @@ function setupEventListeners() {
         state.sortColumn = col;
         state.sortAscending = true;
       }
+      state.currentPage = 1;
       renderTable();
     });
+  });
+
+  // Pagination Previous / Next buttons
+  on('btnPrevPage', 'click', () => {
+    if (state.currentPage > 1) {
+      state.currentPage--;
+      renderTable();
+    }
+  });
+
+  on('btnNextPage', 'click', () => {
+    const allTasks = getFilteredAndSortedTasks();
+    const totalPages = Math.ceil(allTasks.length / state.pageSize) || 1;
+    if (state.currentPage < totalPages) {
+      state.currentPage++;
+      renderTable();
+    }
   });
 
   // Bulk buttons

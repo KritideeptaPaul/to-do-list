@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Task Tracker — Minimalist Task Management</title>
-  <link rel="stylesheet" href="style.css?v=2.3">
+  <link rel="stylesheet" href="style.css?v=2.4">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -217,6 +217,26 @@
           <p class="empty-text">No tasks yet. Create your first task to get started!</p>
           <button class="btn btn-sm btn-primary" id="btnEmptyAdd">Create New Task</button>
         </div>
+
+        <!-- Pagination Controls (10 tasks per page) -->
+        <div class="table-pagination" id="tablePagination" style="display: none;">
+          <span class="pagination-info" id="paginationInfo">Showing 1–10 of 10 tasks</span>
+          <div class="pagination-controls">
+            <button class="btn btn-sm btn-ghost pagination-btn" id="btnPrevPage" title="Previous page">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+              <span>Previous</span>
+            </button>
+            <span class="pagination-page-indicator" id="paginationPageIndicator">1 / 1</span>
+            <button class="btn btn-sm btn-ghost pagination-btn" id="btnNextPage" title="Next page">
+              <span>Next</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -274,6 +294,6 @@
   <!-- Fallback button for cached JS scripts -->
   <button id="btnQuickAddTab" style="display:none;" aria-hidden="true"></button>
 
-  <script src="app.js?v=2.3"></script>
+  <script src="app.js?v=2.4"></script>
 </body>
 </html>

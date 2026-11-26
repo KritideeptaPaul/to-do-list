@@ -689,6 +689,44 @@ tr.row-completed .task-title-cell span {
   margin-bottom: 16px;
 }
 
+/* Pagination Controls */
+.table-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pagination-info {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-page-indicator {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-main);
+  padding: 0 4px;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* ==========================================================================
    Modal Dialog
    ========================================================================== */
